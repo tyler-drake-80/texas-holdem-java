@@ -1,1 +1,5 @@
-Finish GameEngine (core logic), Table, CheckHands
+GameEngine logic
+Betting
+Hand checking logic
+Player chips
+GUI
