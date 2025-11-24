@@ -33,4 +33,11 @@ public class Table{
     public void clearCommunityCards(){
         communityCards.clear();
     }
+    
+    public int getPot(){
+        return pot;
+    }
+    public void addToPot(int amount){
+        pot += amount;
+    }
 }
