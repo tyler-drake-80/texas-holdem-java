@@ -7,6 +7,8 @@ public class Player{
     private final List<Card> hand;
     private final String name;
     private boolean folded = false;
+    //starting amount
+    private int chips = 1000;
 
     public Player(String name){
         this.name = name;
@@ -20,6 +22,18 @@ public class Player{
     public void clearHand(){
         hand.clear();
         folded = false;
+    }
+
+    public int getChips(){
+        return chips;
+    }
+
+    public void addChips(int amount){
+        chips += amount;
+    }
+
+    public void removeChips(int amount){
+        chips -= amount;
     }
 
     public List<Card> getHand(){
