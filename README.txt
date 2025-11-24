@@ -6,3 +6,13 @@ Package structure:
 BELOW, put what you are working on currently.
     Tyler - game engine 
     Steven - 
+
+---- Commits ----
+Commit regularly!
+Steps:
+    Save files
+    git add .
+    git commit -m "Message here"
+    git push
+    Check repo
+        IF merge conflict, communicate
