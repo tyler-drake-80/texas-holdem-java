@@ -1,14 +1,14 @@
 Package structure:
     cards -> Card, Deck, enums
     game -> hand checking, engine, table
-    players -> basic player, room to add a computer player
+    players -> basic player (room to add a computer player for ec), position enum
 
 BELOW, put what you are working on currently.
     Tyler - game engine 
     Steven - 
 
 ---- Commits ----
-Check repo and commit regularly!
+Check repo, TODO and commit regularly!
 Steps:
     Pull latest
     Start working
