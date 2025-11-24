@@ -1,28 +1,23 @@
 package game;
 
+import players.*;
 import cards.*;
 import java.util.*;
 
 public class CheckHand{
-    /*
-       10. Royal flush - A, K, Q, J, 10 of SAME SUIT
-        9. Straight flush - straight in SAME SUIT
-        8. Four of a kind - same values, diff suit
-        7. Full house - Three cards of one val, pair of another
-        6. Flush - All cards same suit
-        5. Straight - five cards of consecutive value
-        4. Three of a kind - three card same value
-        3. Two pair
-        2. Pair
-        1. High card 
-    */
+
+    public CheckHand(){ }
 
    //returns WEIGHT of hand that player has
-   public HAND_WEIGHT checkHand(List<Card> playerCards, List<Card> communityCards){
+   public HAND_WEIGHT checkHand(Player p, List<Card> communityCards){
         List<Card> fullHand = new ArrayList<>();
+        List<Card> playerCards = p.getHand();
         fullHand.addAll(playerCards);
         fullHand.addAll(communityCards);
         // Logic to evaluate the best hand from fullHand goes here
+        for(Card c : fullHand){
+            System.out.println(c);
+        }
         return HAND_WEIGHT.HIGH_CARD; // Placeholder return value
          
    }
