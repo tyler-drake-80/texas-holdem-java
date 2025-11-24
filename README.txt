@@ -8,8 +8,10 @@ BELOW, put what you are working on currently.
     Steven - 
 
 ---- Commits ----
-Commit regularly!
+Check repo and commit regularly!
 Steps:
+    Pull latest
+    Start working
     Save files
     git add .
     git commit -m "Message here"
