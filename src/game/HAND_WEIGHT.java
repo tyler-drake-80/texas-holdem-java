@@ -33,3 +33,4 @@ public enum HAND_WEIGHT {
         return this.weight;
     }
 }
+
