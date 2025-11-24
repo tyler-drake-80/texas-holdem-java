@@ -9,6 +9,7 @@ public class Player{
     private boolean folded = false;
     //starting amount
     private int chips = 1000;
+    private POSITIONS position;
 
     public Player(String name){
         this.name = name;
@@ -50,6 +51,12 @@ public class Player{
 
     public String getName(){
         return name;
+    }
+    public POSITIONS getPosition(){
+        return position;
+    }
+    public void setPosition(POSITIONS p){
+        this.position = p;
     }
 
 }
