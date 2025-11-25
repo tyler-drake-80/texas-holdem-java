@@ -40,4 +40,15 @@ public class Table{
     public void addToPot(int amount){
         pot += amount;
     }
+    public void showAllHands(){
+        for(Player p : players){
+            //for later gui implementation -- wont matter for now
+            for(Card c : p.getHand()){
+                if(!c.isFaceUp()){
+                    c.flip();
+                }
+            }
+            System.out.println(p.getName() + "'s hand: " + p.getHand());
+        }
+    }
 }
