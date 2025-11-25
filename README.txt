@@ -13,12 +13,15 @@ BELOW, put what you are working on currently.
 2. Each person has a dev branch:
    - tyler-dev
    - steven-dev
+   -create with:
+    git checkout -b tyler-dev
+    git push -u origin tyler-dev
 
 3. For every feature:
    git checkout name-dev
-   ^^ when creating for the first time, do -b after checkout^^
    git pull
    git checkout -b feature-name
+    git push -u origin feature-name
 
 4. Work → commit → push:
    git add .
