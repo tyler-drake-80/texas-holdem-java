@@ -1,1 +1,1 @@
-Start of Steven's log
+12/1 - mostly finished GameEngine logic(some doesnt work fully but ill wait for GUI since that will be the finished product)

@@ -7,7 +7,10 @@ import java.util.*;
 public class Table{
     private final List<Player> players;
     private final List<Card> communityCards;
-    public int pot = 0;
+    private int pot = 0;
+    private int currentBet = 0; // The current bet that needs to be matched
+    private int smallBlind = 10;
+    private int bigBlind = 20;
 
     public Table(){
         players = new ArrayList<>();
@@ -37,9 +40,83 @@ public class Table{
     public int getPot(){
         return pot;
     }
+    
     public void addToPot(int amount){
         pot += amount;
     }
+
+    public int getCurrentBet(){
+        return currentBet;
+    }
+
+    public void setCurrentBet(int bet){
+        this.currentBet = bet;
+    }
+
+    public int getSmallBlind(){
+        return smallBlind;
+    }
+
+    public int getBigBlind(){
+        return bigBlind;
+    }
+
+    public void setSmallBlind(int amount){
+        this.smallBlind = amount;
+    }
+
+    public void setBigBlind(int amount){
+        this.bigBlind = amount;
+    }
+
+    /**
+     * Reset the current bet at the start of a new betting round
+     */
+    public void resetCurrentBet(){
+        currentBet = 0;
+        for(Player p : players){
+            p.resetCurrentBet();
+        }
+    }
+
+    /**
+     * Reset for a new hand
+     */
+    public void resetForNewHand(){
+        pot = 0;
+        currentBet = 0;
+        communityCards.clear();
+        for(Player p : players){
+            p.resetForNewHand();
+        }
+    }
+
+    /**
+     * Get the number of active players (not folded and not all-in)
+     */
+    public int getActivePlayers(){
+        int count = 0;
+        for(Player p : players){
+            if(!p.isFolded() && !p.isAllIn()){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Get the number of players still in the hand (not folded)
+     */
+    public int getPlayersInHand(){
+        int count = 0;
+        for(Player p : players){
+            if(!p.isFolded()){
+                count++;
+            }
+        }
+        return count;
+    }
+    
     public void showAllHands(){
         for(Player p : players){
             //for later gui implementation -- wont matter for now
