@@ -1,4 +1,5 @@
 package players;
+
 import java.util.*;
 import cards.*;
 
@@ -7,22 +8,22 @@ public class Player{
     private final List<Card> hand;
     private final String name;
     private boolean folded = false;
-    //starting amount
+    //starting amount (placeholder)
     private int chips = 1000;
     private POSITIONS position;
 
     public Player(String name){
         this.name = name;
-        hand = new ArrayList<>();
+        this.hand = new ArrayList<>();
     }
 
     public void giveCard(Card c){
-        hand.add(c);
+        this.hand.add(c);
     }
 
     public void clearHand(){
-        hand.clear();
-        folded = false;
+        this.hand.clear();
+        this.folded = false;
     }
 
     public int getChips(){
@@ -30,11 +31,11 @@ public class Player{
     }
 
     public void addChips(int amount){
-        chips += amount;
+        this.chips += amount;
     }
 
     public void removeChips(int amount){
-        chips -= amount;
+        this.chips -= amount;
     }
 
     public List<Card> getHand(){
@@ -42,7 +43,7 @@ public class Player{
     }
 
     public void fold(){
-        folded = true;
+        this.folded = true;
     }
 
     public boolean isFolded(){

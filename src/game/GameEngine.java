@@ -44,16 +44,29 @@ public class GameEngine{
         table.addCommunityCard(c);
     }
     //easier understanding of game function/flow
-    public void river(){ turn();}
+    public void river(){ turn(); }
 
     public void bet(){
         //implement
+        List<Player> players = table.getPlayers();
+        for(Player p : players){
+            if(!p.isFolded()){
+                System.out.print(p.getName() + ", do you want to fold? (y/n): ");
+                String response = sc.nextLine();
+                if(response.equalsIgnoreCase("y")){
+                    p.fold();
+                    System.out.println(p.getName() + " has folded.");
+                } else {
+                    System.out.println(p.getName() + " stays in the game.");
+                }
+            }
+        }
     }
     public void start(){
         System.out.println("Welcome to Texas Hold'em!");
 
-        for(int i = 1; i <= numPlayers; i++){
-            System.out.print("Enter name for Player " + i + ": ");
+        for(int i = 0; i < numPlayers; i++){
+            System.out.print("Enter name for Player " + (i+1) + ": ");
             String name = sc.nextLine();
             Player p = new Player(name);
             table.addPlayer(p);
@@ -67,19 +80,10 @@ public class GameEngine{
         turn();
         bet();
         river();
-        //calculate hands, find winner (break out into another function/class?)
-        //use map to associate player to hand weight??
-        List<HAND_WEIGHT> weights = new ArrayList<>();
-        for(Player p : table.getPlayers()){
-            if(!p.isFolded()){
-                System.out.println(p.getName() + "'s hand:");
-                for(Card c : p.getHand()){
-                    System.out.println(c);
-                }
-                HAND_WEIGHT weight = handChecker.checkHand(p, table.getCommunityCards());
-                weights.add(weight);
-            }
-        }
+        bet();
+        table.showAllHands();
+        Player winner = handChecker.findWinner(table);
+        System.out.println("The winner is " + winner.getName() + "!");
     }    
     
 }
