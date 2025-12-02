@@ -1,3 +1,4 @@
 11/21 - Finished basic player
 11/23 - Finished cards package, started on GameEngine and Table
 11/24 - Added basic table logic, added chips to players, basic game flow to GameEngine
+12/02 - fixed compile errors
