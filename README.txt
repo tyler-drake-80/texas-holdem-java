@@ -4,7 +4,7 @@ Package structure:
     players -> basic player (room to add a computer player for ec), position enum
 
 BELOW, put what you are working on currently.
-    Tyler - game engine 
+    Tyler - GUI 
     Steven - 
 
 ---- Commits ----
