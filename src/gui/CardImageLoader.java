@@ -8,6 +8,8 @@ import javax.swing.*;
 
 public class CardImageLoader {
     private static final String IMAGE_PATH = "/Cards/Classic/"; 
+    private static final String BACK_PATH = "/Backs/"; 
+
     private static final Map<String, ImageIcon> cardImageCache = new HashMap<>();
 
     public static void loadAllCards(){
@@ -39,6 +41,10 @@ public class CardImageLoader {
     public static ImageIcon getCardImage(Card card){
         String code = suitToPrefix(card.getSuit()) + valueToNumber(card.getValue());
         return cardImageCache.get(code);
+    }
+    public static ImageIcon getBackImage(){
+        return new ImageIcon(
+            CardImageLoader.class.getResource(BACK_PATH + "back.png"));
     }
 
     private static String suitToPrefix(SUIT suit){
