@@ -357,7 +357,7 @@ public class GameEngine{
                 for(Card c : p.getHand()){
                     System.out.println("  " + c);
                 }
-                HAND_WEIGHT weight = handChecker.checkHand(p, table.getCommunityCards());
+                HAND_WEIGHT weight = handChecker.checkWeight(p, table.getCommunityCards());
                 weights.add(weight);
             }
         }
