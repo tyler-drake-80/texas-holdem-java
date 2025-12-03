@@ -1,6 +1,7 @@
 package gui.integration;
 
 import cards.*;
+import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -10,6 +11,9 @@ import javax.swing.ImageIcon;
  * No classpath resources required.
  */
 public class CardImageLoader {
+    private static final int CARD_WIDTH = 80;
+    private static final int CARD_HEIGHT = 120;
+
     private static final String IMAGE_DIR = "resources/Cards/Classic/";
     private static final String BACK_FILE = "resources/Backs/back.png";
 
@@ -23,14 +27,19 @@ public class CardImageLoader {
                 String code = suitToPrefix(s) + valueToNumber(v);  // e.g. "h10"
                 String filename = IMAGE_DIR + code + ".png";
 
-                ImageIcon icon = new ImageIcon(filename);
+                ImageIcon rawIcon = new ImageIcon(filename);
 
-                if (icon.getIconWidth() <= 0) {
+                if (rawIcon.getIconWidth() <= 0) {
                     System.err.println("Error loading image file: " + filename);
                     continue;
                 }
 
-                cardImageCache.put(code, icon);
+                // Scale image to standard size
+                Image scaled = rawIcon.getImage().getScaledInstance(
+                        CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH); 
+
+                ImageIcon scaledIcon = new ImageIcon(scaled);
+                cardImageCache.put(code, scaledIcon);
             }
         }
 
