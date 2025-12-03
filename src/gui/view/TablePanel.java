@@ -1,6 +1,7 @@
-package gui;
+package gui.view;
 
 import cards.Card;
+import gui.integration.PlayerState;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;

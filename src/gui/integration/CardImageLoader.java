@@ -1,4 +1,4 @@
-package gui;
+package gui.integration;
 
 import cards.*;
 import java.util.HashMap;
