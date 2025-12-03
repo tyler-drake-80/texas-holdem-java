@@ -1,11 +1,11 @@
 package gui;
 
 import cards.Card;
-import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.ArrayList;    
+import javax.swing.*;    
 /**
  * TablePanel arranges all poker table components:
  *  -4 PlayerPanels around the table
@@ -61,8 +61,8 @@ public class TablePanel extends JPanel{
                 panel.setPlayerName(ps.name);
             }
             panel.setChips(ps.chips);
-            panel.setCards(ps.card1, ps.card2, ps.cardsFaceUp);
-            panel.setActive(ps.isActive);
+            panel.setCards(ps.hole1, ps.hole2, ps.cardsFaceUp);
+            panel.setActive(ps.active);
         }
         boardPanel.setCommunityCards(state.communityCards);
         boardPanel.setPot(state.pot);
@@ -90,10 +90,10 @@ public class TablePanel extends JPanel{
         public int seatIndex;
         public String name;
         public int chips;
-        public Card card1;
-        public Card card2;
+        public Card hole1;
+        public Card hole2;
         public boolean cardsFaceUp;
-        public boolean isActive;
+        public boolean active;
 
         public PlayerState(int seatIndex){
             this.seatIndex = seatIndex;
@@ -103,12 +103,12 @@ public class TablePanel extends JPanel{
         public PlayerState name(String name) {this.name = name; return this;}
         public PlayerState chips(int chips) {this.chips = chips; return this;}
         public PlayerState cards(Card c1, Card c2, boolean faceUp) {
-            this.card1 = c1; 
-            this.card2 = c2; 
+            this.hole1 = c1; 
+            this.hole2 = c2; 
             this.cardsFaceUp = faceUp; 
             return this;
         }
-        public PlayerState active(boolean isActive) {this.isActive = isActive; return this;}
+        public PlayerState active(boolean active) {this.active = active; return this;}
 
     }
     /**
