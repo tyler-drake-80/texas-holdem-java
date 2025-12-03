@@ -1,8 +1,9 @@
-package gui;
+package gui.view;
 
 import cards.Card;
-import javax.swing.*;
+import gui.integration.CardImageLoader;
 import java.awt.BorderLayout;
+import javax.swing.*;
 /**
  * Represents a single card displayed on the table.
  * 

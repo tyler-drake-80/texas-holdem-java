@@ -1,6 +1,7 @@
-package gui;
+package gui.integration;
 
 import players.Player;
+import gui.view.*;
 
 public class GUIListener implements GameListener {
     private final TablePanel tablePanel;

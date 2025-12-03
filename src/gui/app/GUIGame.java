@@ -1,7 +1,9 @@
-package gui;
+package gui.app;
 
 import cards.*;
 import game.GameEngine;
+import gui.view.*;
+import gui.integration.*;
 
 import javax.swing.*;
 import java.awt.*;

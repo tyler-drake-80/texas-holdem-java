@@ -1,4 +1,4 @@
-package gui;
+package gui.view;
 
 import cards.Card;
 import javax.swing.*;

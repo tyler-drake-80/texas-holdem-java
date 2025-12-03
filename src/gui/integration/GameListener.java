@@ -1,5 +1,6 @@
-package gui;
+package gui.integration;
 
+import gui.view.*;
 import players.Player;
 
 /**
