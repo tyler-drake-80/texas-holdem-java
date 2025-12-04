@@ -59,6 +59,7 @@ public class GUIGame extends JFrame{
 
     public void startGame(){
         setVisible(true);
+        buildDemoTableState();
         //need to convert engine.start() to a stepwise process
         //will call engine.startHand(), engine.nextBettingRound(), etc
         //once we build the listener + action panel, call will be:

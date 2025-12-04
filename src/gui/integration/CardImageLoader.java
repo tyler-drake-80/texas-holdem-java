@@ -9,6 +9,10 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+/**
+ * Loads card images directly from the file system under ./resources/.
+ * No classpath resources required.
+ */
 public class CardImageLoader {
     private static final String IMAGE_DIR = "resources/Cards/Classic/"; 
     private static final String BACK_DIR = "resources/Backs/back.png"; 
@@ -19,7 +23,7 @@ public class CardImageLoader {
     private static final Map<String, ImageIcon> cardImageCache = new HashMap<>();
     private static ImageIcon backImage;
 
-    public static void loadAllCards(){
+    public static void loadAllCards() {
         System.out.println("Loading card images...");
 
         for(SUIT s : SUIT.values()){
@@ -33,6 +37,13 @@ public class CardImageLoader {
                 } else {
                     System.err.println("Failed to load image for " + code);
                 }
+
+                // Scale image to standard size
+                Image scaled = rawIcon.getImage().getScaledInstance(
+                        CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH); 
+
+                ImageIcon scaledIcon = new ImageIcon(scaled);
+                cardImageCache.put(code, scaledIcon);
             }
         }
         backImage = loadAndScale(BACK_DIR);
@@ -51,7 +62,7 @@ public class CardImageLoader {
         }
     }
 
-    public static ImageIcon getCardImage(Card card){
+    public static ImageIcon getCardImage(Card card) {
         String code = suitToPrefix(card.getSuit()) + valueToNumber(card.getValue());
         return cardImageCache.get(code);
     }
@@ -59,13 +70,13 @@ public class CardImageLoader {
         return backImage;
     }
 
-    private static String suitToPrefix(SUIT suit){
-        switch(suit){
-            case HEARTS: return "h";
+    private static String suitToPrefix(SUIT suit) {
+        switch (suit) {
+            case HEARTS:   return "h";
             case DIAMONDS: return "d";
-            case CLUBS: return "c";
-            case SPADES: return "s";
-            default: return "";
+            case CLUBS:    return "c";
+            case SPADES:   return "s";
+            default:       return "";
         }
     }
     private static String valueToNumber(VALUE value){
@@ -82,8 +93,8 @@ public class CardImageLoader {
             case TEN: return "10";
             case JACK: return "11";
             case QUEEN: return "12";
-            case KING: return "13";
-            default: return "";
+            case KING:  return "13";
+            default:    return "";
         }
     }
 }
