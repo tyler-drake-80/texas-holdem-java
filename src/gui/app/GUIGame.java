@@ -2,11 +2,14 @@ package gui.app;
 
 import cards.*;
 import game.GameEngine;
+import game.Table;
 import gui.integration.*;
 import gui.view.*;
 import java.awt.*;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import players.Player;
 /**
  * Top-level swing window containing the poker table GUI.
  * Initializes:
@@ -19,6 +22,7 @@ import javax.swing.*;
  */
 public class GUIGame extends JFrame{
     private final TablePanel tablePanel;
+    private final ActionPanel actionPanel;
     private final GameEngine engine;
 
     public GUIGame(){
@@ -34,7 +38,9 @@ public class GUIGame extends JFrame{
 
         //initialize table panel
         tablePanel = new TablePanel();
+        actionPanel = new ActionPanel();
         add(tablePanel, BorderLayout.CENTER);
+        add(actionPanel, BorderLayout.SOUTH);
 
         //initialize game engine
         engine = new GameEngine();
@@ -46,7 +52,8 @@ public class GUIGame extends JFrame{
          * 
          * WILL WRITE LISTENER CLASS NEXT
          */
-        //engine.setListener(new GUIListener(tablePanel, actionPanel));
+        GUIListener guiListener = new GUIListener(tablePanel, actionPanel);
+        engine.setListener(guiListener);
 
     }
 
@@ -57,64 +64,48 @@ public class GUIGame extends JFrame{
         //will call engine.startHand(), engine.nextBettingRound(), etc
         //once we build the listener + action panel, call will be:
         //engine.start(); -- from here
+        //GUIListener guiListener = new GUIListener(tablePanel, actionPanel);
+        //engine.setListener(guiListener);
+        Thread gameThread = new Thread(() -> {
+            engine.startPassAndPlayHand();
+        });
+        gameThread.start();
     }
+/**
+     * Helper to convert the current GameEngine / Table state into
+     * the TablePanel.TableState used by the GUI.
+     */
+    private TablePanel.TableState buildTableStateFromEngine() {
+        Table table = engine.getTable();
+        List<Player> players = table.getPlayers();
+        List<Card> community = table.getCommunityCards();
 
-    private void buildDemoTableState() {
-        TablePanel.TableState state = new TablePanel.TableState();
+        TablePanel.TableState ts = new TablePanel.TableState();
 
-        // --- Create 4 fake players: seats 0=N, 1=E, 2=S, 3=W ---
+        // Map engine player list -> 4 seats: 0=N,1=E,2=S,3=W
+        for (int i = 0; i < players.size() && i < 4; i++) {
+            Player p = players.get(i);
 
-        TablePanel.PlayerState north = new TablePanel.PlayerState(0);
-        north.name = "North";
-        north.chips = 1500;
-        north.hole1 = new Card(SUIT.HEARTS, VALUE.ACE);
-        north.hole2 = new Card(SUIT.HEARTS, VALUE.KING);
-        north.cardsFaceUp = true;
-        north.active = false;
-        state.players.add(north);
+            TablePanel.PlayerState ps = new TablePanel.PlayerState(i);
+            ps.name = p.getName();
+            ps.chips = p.getChips();
 
-        TablePanel.PlayerState east = new TablePanel.PlayerState(1);
-        east.name = "East";
-        east.chips = 1200;
-        east.hole1 = new Card(SUIT.CLUBS, VALUE.TWO);
-        east.hole2 = new Card(SUIT.CLUBS, VALUE.THREE);
-        east.cardsFaceUp = true;
-        east.active = false;
-        state.players.add(east);
+            // grab first two hole cards if present
+            List<Card> hand = new ArrayList<>(p.getHand());
+            if (hand.size() > 0) ps.hole1 = hand.get(0);
+            if (hand.size() > 1) ps.hole2 = hand.get(1);
 
-        TablePanel.PlayerState south = new TablePanel.PlayerState(2);
-        south.name = "South (You)";
-        south.chips = 2000;
-        south.hole1 = new Card(SUIT.SPADES, VALUE.TEN);
-        south.hole2 = new Card(SUIT.SPADES, VALUE.JACK);
-        south.cardsFaceUp = true;   // later you’ll flip others face-down
-        south.active = true;        // highlight this player
-        state.players.add(south);
+            ps.cardsFaceUp = true;   // show everyone for now
+            ps.active = false;       // no betting turn yet
 
-        TablePanel.PlayerState west = new TablePanel.PlayerState(3);
-        west.name = "West";
-        west.chips = 900;
-        west.hole1 = new Card(SUIT.DIAMONDS, VALUE.FIVE);
-        west.hole2 = new Card(SUIT.DIAMONDS, VALUE.SIX);
-        west.cardsFaceUp = true;
-        west.active = false;
-        state.players.add(west);
+            ts.players.add(ps);
+        }
 
-    // --- Community cards (flop, turn, river) ---
+        ts.communityCards = community;
+        ts.pot = table.getPot();
 
-        state.communityCards = Arrays.asList(
-            new Card(SUIT.HEARTS, VALUE.TEN),
-            new Card(SUIT.CLUBS, VALUE.JACK),
-            new Card(SUIT.SPADES, VALUE.QUEEN),
-            new Card(SUIT.DIAMONDS, VALUE.KING),
-            new Card(SUIT.HEARTS, VALUE.NINE)
-        );
-        state.pot = 320;
-
-        // --- Push state into the table so it can render ---
-        tablePanel.applyTableState(state);
+        return ts;
     }
-
     //main method to launch GUI WITHOUT building launcher
     public static void main(String[] args){
         SwingUtilities.invokeLater(() -> {
@@ -126,4 +117,5 @@ public class GUIGame extends JFrame{
             game.startGame();
         });
     }
+
 }

@@ -1,7 +1,7 @@
 package gui.integration;
 
-import players.Player;
 import gui.view.*;
+import players.Player;
 
 public class GUIListener implements GameListener {
     private final TablePanel tablePanel;
@@ -28,12 +28,13 @@ public class GUIListener implements GameListener {
         // Convert GameState to TableState for the TablePanel
         TablePanel.TableState ts = new TablePanel.TableState();
 
-        for(PlayerState ps : gs.players){
+        for(gui.integration.PlayerState ps : gs.players) {
             TablePanel.PlayerState pstate = new TablePanel.PlayerState(ps.seat);
             pstate.name = ps.name;
             pstate.chips = ps.chips;
             pstate.hole1 = ps.hole1;
             pstate.hole2 = ps.hole2;
+            //pass and play: only acting seat's hole cards are shown
             pstate.cardsFaceUp = ps.faceUp;
             pstate.active = ps.active;
 
