@@ -20,6 +20,12 @@ public class Player{
         this.name = name;
         this.hand = new ArrayList<>();
     }
+    
+    public Player(String name, int startingChips){
+        this.name = name;
+        this.hand = new ArrayList<>();
+        this.chips = startingChips;
+    }
 
     public void giveCard(Card c){
         this.hand.add(c);

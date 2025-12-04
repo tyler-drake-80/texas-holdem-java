@@ -1,4 +1,6 @@
-GameEngine logic
-Betting
-Hand checking logic
-Action listener
+- Multiple hands/rounds (dealer button rotation is implemented)
+- Side pots for all-in situations
+- Betting limits/pot limit variants
+- Tournament mode
+
+these may not be necessary

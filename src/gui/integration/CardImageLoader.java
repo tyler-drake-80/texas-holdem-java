@@ -37,13 +37,6 @@ public class CardImageLoader {
                 } else {
                     System.err.println("Failed to load image for " + code);
                 }
-
-                // Scale image to standard size
-                Image scaled = rawIcon.getImage().getScaledInstance(
-                        CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH); 
-
-                ImageIcon scaledIcon = new ImageIcon(scaled);
-                cardImageCache.put(code, scaledIcon);
             }
         }
         backImage = loadAndScale(BACK_DIR);

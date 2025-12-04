@@ -1,1 +1,19 @@
 12/1 - mostly finished GameEngine logic(some doesnt work fully but ill wait for GUI since that will be the finished product)
+
+12/4 - Major GUI enhancements:
+  - Added game setup dialog for configurable starting chips (100-10,000) and player count (2-8)
+  - Redesigned table layout to support up to 8 players in oval arrangement
+  - Players now positioned dynamically around table in circular pattern
+  - Community cards (river) moved to center of table
+  - Player cards and hand rankings now displayed directly at each player's position
+  - Hand rankings (Pair, Flush, etc.) show near player info when cards are visible
+  - Only the active player's cards are shown face-up during betting
+  - All other players' cards remain hidden until showdown
+  - Removed separate hand info panel, integrated info into player displays
+  - Player panels now have semi-transparent backgrounds with centered text
+  - Side players' text properly centered for better readability
+  - Active player highlighted with yellow border
+
+12/4 - Fixed incorrect cards from appearing
+  - T and 10 both appeared in the deck, now only T does
+  - 1 card no longer exists

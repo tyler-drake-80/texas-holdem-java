@@ -2,88 +2,115 @@ package gui.view;
 
 import cards.Card;
 import gui.integration.PlayerState;
-import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;    
 /**
  * TablePanel arranges all poker table components:
- *  -4 PlayerPanels around the table
+ *  -8 PlayerPanels positioned in an oval around the table
  *  -central BoardPanel for community cards + pot
  * 
  * Acts as main poker table visual layout.
  */
 public class TablePanel extends JPanel{
-    private PlayerPanel northPlayer;
-    private PlayerPanel southPlayer;    
-    private PlayerPanel eastPlayer;
-    private PlayerPanel westPlayer;
-
+    private List<PlayerPanel> playerPanels;
     private BoardPanel boardPanel;
+    private static final int MAX_PLAYERS = 8;
 
     public TablePanel(){
-        setLayout(new BorderLayout());
-        setBackground(new Color(0, 100, 0));//green felt table
-        //placeholder players until engine updates them
-        northPlayer = new PlayerPanel("Player 3");
-        southPlayer = new PlayerPanel("Player 1");
-        eastPlayer = new PlayerPanel("Player 2");
-        westPlayer = new PlayerPanel("Player 4");
+        setLayout(null); // Use absolute positioning for oval arrangement
+        setBackground(new Color(0, 100, 0)); // green felt table
+        
+        playerPanels = new ArrayList<>();
+        
+        // Create 8 player panels
+        for(int i = 0; i < MAX_PLAYERS; i++){
+            PlayerPanel panel = new PlayerPanel("Player " + (i + 1), i);
+            panel.setVisible(false); // Initially hidden
+            playerPanels.add(panel);
+            add(panel);
+        }
 
         boardPanel = new BoardPanel();
-
-        add(northPlayer, BorderLayout.NORTH);
-        add(southPlayer, BorderLayout.SOUTH);
-        add(eastPlayer, BorderLayout.EAST);
-        add(westPlayer, BorderLayout.WEST);
-        add(boardPanel, BorderLayout.CENTER);
+        add(boardPanel);
     }
 
-    //called from game engine
+    @Override
+    public void doLayout() {
+        super.doLayout();
+        
+        int width = getWidth();
+        int height = getHeight();
+        
+        // Center area for board (community cards and pot)
+        int centerX = width / 2;
+        int centerY = height / 2;
+        int boardWidth = 400;
+        int boardHeight = 200;
+        boardPanel.setBounds(centerX - boardWidth/2, centerY - boardHeight/2, 
+                            boardWidth, boardHeight);
+        
+        // Oval parameters for player positioning
+        int ovalWidth = width - 280;
+        int ovalHeight = height - 280;
+        int ovalCenterX = width / 2;
+        int ovalCenterY = height / 2;
+        
+        // Position players in an oval
+        for(int i = 0; i < playerPanels.size(); i++){
+            if(!playerPanels.get(i).isVisible()) continue;
+            
+            // Calculate angle for this player (start from bottom, go clockwise)
+            double angle = Math.PI / 2 + (2 * Math.PI * i / playerPanels.size());
+            
+            // Calculate position on oval
+            int x = ovalCenterX + (int)(ovalWidth / 2 * Math.cos(angle));
+            int y = ovalCenterY - (int)(ovalHeight / 2 * Math.sin(angle));
+            
+            // Player panel size
+            int panelWidth = 180;
+            int panelHeight = 120;
+            
+            playerPanels.get(i).setBounds(x - panelWidth/2, y - panelHeight/2, 
+                                         panelWidth, panelHeight);
+        }
+    }
+
     /**
      * Applies a state update from game engine
-     * Updates:
-     * -Player names
-     * -Chip counts
-     * -Hole cards
-     * -Active player highlight
-     * -Community cards
-     * -Pot size
-     * @param state the current table state
      */
     public void applyTableState(TableState state){
         if (state == null) return;
 
+        // Hide all panels first
+        for(PlayerPanel panel : playerPanels){
+            panel.setVisible(false);
+        }
+
+        // Update visible players
         for(PlayerState ps : state.players){
-            PlayerPanel panel = getPanelForSeat(ps.seatIndex);
-            if(panel == null) continue;
+            if(ps.seatIndex < 0 || ps.seatIndex >= MAX_PLAYERS) continue;
+            
+            PlayerPanel panel = playerPanels.get(ps.seatIndex);
+            panel.setVisible(true);
+            
             if(ps.name != null){
                 panel.setPlayerName(ps.name);
             }
             panel.setChips(ps.chips);
             panel.setCards(ps.hole1, ps.hole2, ps.cardsFaceUp);
             panel.setActive(ps.active);
+            panel.setHandRanking(ps.handRanking);
         }
+        
         boardPanel.setCommunityCards(state.communityCards);
         boardPanel.setPot(state.pot);
+        
+        revalidate();
+        repaint();
     }
 
-    /**
-     * Maps a seat index to a table position.
-     * 0 = north, 1 = east, 2 = south, 3 = west
-     * @param seatIndex the seat index wheere the player is seated
-     * @return the PlayerPanel at that seat
-     */
-    private PlayerPanel getPanelForSeat(int seatIndex){
-        switch(seatIndex){
-            case 0: return southPlayer;
-            case 1: return eastPlayer;
-            case 2: return northPlayer;
-            case 3: return westPlayer;
-            default: return null;
-        }
-    }
     /**
      * Helper class to represent a player's state at the table.
      */
@@ -95,6 +122,7 @@ public class TablePanel extends JPanel{
         public Card hole2;
         public boolean cardsFaceUp;
         public boolean active;
+        public String handRanking; // e.g. "Pair", "Flush"
 
         public PlayerState(int seatIndex){
             this.seatIndex = seatIndex;
@@ -110,11 +138,11 @@ public class TablePanel extends JPanel{
             return this;
         }
         public PlayerState active(boolean active) {this.active = active; return this;}
-
+        public PlayerState handRanking(String ranking) {this.handRanking = ranking; return this;}
     }
+    
     /**
      * Represents the overall state of the table.
-     * The controller fills this object and the TablePanel displays it
      */
     public static class TableState{
         public List<PlayerState> players = new ArrayList<>();

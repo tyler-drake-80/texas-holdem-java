@@ -25,6 +25,8 @@ public class GameEngine{
     private GameListener listener;
     //index of button in table.getPlayers()
     private int dealerIndex = 0; // Tracks dealer position
+    private int startingChips = 1000; // Default starting chips
+    private int numberOfPlayers = 4; // Default number of players (2-8)
 
     public GameEngine(){
         this.table = new Table();
@@ -38,12 +40,20 @@ public class GameEngine{
     public void setListener(GameListener listener){
         this.listener = listener;
     }
+    
+    public void setStartingChips(int chips){
+        this.startingChips = chips;
+    }
+    
+    public void setNumberOfPlayers(int players){
+        this.numberOfPlayers = players;
+    }
     private void ensurePlayers(){
         if(!table.getPlayers().isEmpty()){
             return;
         }
-        for(int i = 0; i < 4; i++){
-            Player p = new Player("Player " + (i + 1));
+        for(int i = 0; i < numberOfPlayers; i++){
+            Player p = new Player("Player " + (i + 1), startingChips);
             table.addPlayer(p);
         }
     }
@@ -305,17 +315,94 @@ public class GameEngine{
             notifyState(null);
             return;
         }
-        //multiple people to showdown
-        List<HAND_WEIGHT> weights = new ArrayList<>();
+        
+        // Multiple players to showdown - evaluate hands
+        System.out.println("\n=== SHOWDOWN ===");
+        Map<Player, HAND_WEIGHT> playerHands = new HashMap<>();
+        
         for(Player p : contenders){
             HAND_WEIGHT weight = handChecker.checkWeight(p, table.getCommunityCards());
-            weights.add(weight);
+            playerHands.put(p, weight);
+            System.out.println(p.getName() + "'s hand: " + p.getHand() + " - " + weight);
         }
-        //TODO:
-        // -find the best HAND_WEIGHT(s)
-        // -split pot if tie
-        //update chips accordingly
+        
+        // Find the best hand weight
+        int bestWeight = -1;
+        for(HAND_WEIGHT weight : playerHands.values()){
+            if(weight.getWeight() > bestWeight){
+                bestWeight = weight.getWeight();
+            }
+        }
+        
+        // Find all players with the best hand
+        List<Player> winners = new ArrayList<>();
+        for(Map.Entry<Player, HAND_WEIGHT> entry : playerHands.entrySet()){
+            if(entry.getValue().getWeight() == bestWeight){
+                winners.add(entry.getKey());
+            }
+        }
+        
+        // If there's a tie on hand rank, compare high cards
+        if(winners.size() > 1){
+            winners = breakTie(winners);
+        }
+        
+        // Award pot (split if necessary)
+        int potShare = table.getPot() / winners.size();
+        int remainder = table.getPot() % winners.size();
+        
+        if(winners.size() == 1){
+            Player winner = winners.get(0);
+            winner.addChips(table.getPot());
+            System.out.println("\n" + winner.getName() + " wins the pot of $" + table.getPot() + " with " + playerHands.get(winner));
+        } else {
+            System.out.println("\nPot split between:");
+            for(int i = 0; i < winners.size(); i++){
+                Player winner = winners.get(i);
+                int award = potShare + (i == 0 ? remainder : 0); // Give remainder to first winner
+                winner.addChips(award);
+                System.out.println("  " + winner.getName() + " receives $" + award);
+            }
+        }
+        
         notifyState(null);
+    }
+    
+    /**
+     * Break tie between players with same hand rank by comparing high cards
+     * Returns list of winners (may still be multiple if exact tie)
+     */
+    private List<Player> breakTie(List<Player> tiedPlayers){
+        if(tiedPlayers.size() <= 1) return tiedPlayers;
+        
+        // Get all cards for each player
+        Map<Player, List<Card>> playerCards = new HashMap<>();
+        for(Player p : tiedPlayers){
+            List<Card> allCards = new ArrayList<>();
+            allCards.addAll(p.getHand());
+            allCards.addAll(table.getCommunityCards());
+            // Sort by value descending
+            allCards.sort((a, b) -> b.getValue().getValue() - a.getValue().getValue());
+            playerCards.put(p, allCards);
+        }
+        
+        // Compare high cards
+        int maxHighCard = -1;
+        for(List<Card> cards : playerCards.values()){
+            int highCard = cards.get(0).getValue().getValue();
+            if(highCard > maxHighCard){
+                maxHighCard = highCard;
+            }
+        }
+        
+        List<Player> winners = new ArrayList<>();
+        for(Map.Entry<Player, List<Card>> entry : playerCards.entrySet()){
+            if(entry.getValue().get(0).getValue().getValue() == maxHighCard){
+                winners.add(entry.getKey());
+            }
+        }
+        
+        return winners;
     }
     /**
      * Build and send current game state to GUI
