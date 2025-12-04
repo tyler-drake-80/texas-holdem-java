@@ -2,32 +2,114 @@ package game;
 
 import cards.Card;
 import cards.Deck;
+import gui.integration.GameListener;
+import gui.integration.GameState;
+import gui.integration.PlayerState;
 import java.util.*;
 import players.POSITIONS;
 import players.Player;
-
+/**
+ * This version is GUI driven
+ * -no scanner input
+ * -uses GameListener to notify GUI of state changes and request player actions
+ * 
+ * Currently supports:
+ * -4 player pass and play
+ * -FOLD, CHECK, CALL, ALL_IN (no raises)
+ */
 public class GameEngine{
     private final Table table;
     private final Deck deck;
-    private final Scanner sc;
     private final CheckHand handChecker;
-    private int numPlayers; // No longer final with default value
+    //connect engine to GUI
+    private GameListener listener;
+    //index of button in table.getPlayers()
     private int dealerIndex = 0; // Tracks dealer position
 
     public GameEngine(){
         this.table = new Table();
         this.deck = new Deck();
-        this.sc = new Scanner(System.in);
         this.handChecker = new CheckHand();        
     }
+   /*  public void startDemoHandForGUI(java.util.List<String> names) {
+        // Clear any existing players/community if needed
 
-    /**
-     * Assign positions to players based on dealer button
+        // Create players
+        for (String name : names) {
+            Player p = new Player(name);
+            table.addPlayer(p);
+        }
+
+        this.numPlayers = names.size();
+
+        // Assign positions and blinds, then deal a full board
+        assignPositions();
+        postBlinds();
+        preFlop();  // deal hole cards
+        flop();
+        turn();
+        river();
+    } */
+    public Table getTable(){
+        return table;
+    }
+    public void setListener(GameListener listener){
+        this.listener = listener;
+    }
+    private void ensurePlayers(){
+        if(!table.getPlayers().isEmpty()){
+            return;
+        }
+        for(int i = 0; i < 4; i++){
+            Player p = new Player("Player " + (i + 1));
+            table.addPlayer(p);
+        }
+    }
+
+    public void startPassAndPlayHand(){
+        ensurePlayers();
+
+        resetPlayersForNewHand();
+        assignPositions();
+        postBlinds();
+
+        preFlop();  // deal hole cards
+        bet(true);
+
+        if(table.getPlayersInHand() > 1){
+            flop();
+            bet(false);
+        }
+        if(table.getPlayersInHand() > 1){
+            turn();
+            bet(false);
+        }
+        if(table.getPlayersInHand() > 1){
+            river();
+            bet(false);
+        }
+        // Showdown
+        handleShowdown();
+
+        // Move dealer button
+        dealerIndex = (dealerIndex + 1) % table.getPlayers().size();
+    }
+    /*
+    * Resets hand flags on players: folded, all-in, current bet, hand cards
      */
+    private void resetPlayersForNewHand(){
+        for(Player p : table.getPlayers()){
+            p.resetForNewHand();
+        }
+        table.resetForNewHand();
+    }
+    /**
+    * Assign positions to players based on dealer button
+    */
     private void assignPositions(){
         List<Player> players = table.getPlayers();
         int numPlayers = players.size();
-        
+
         for(int i = 0; i < numPlayers; i++){
             if(i == dealerIndex){
                 players.get(i).setPosition(POSITIONS.BUTTON);
@@ -59,6 +141,7 @@ public class GameEngine{
                 System.out.println(p.getName() + " posts big blind: $" + bbAmount);
             }
         }
+        notifyState(null);
     }
 
     //start of game -- deal two cards to each player
@@ -69,6 +152,7 @@ public class GameEngine{
                 p.giveCard(deck.deal());
             }
         }
+        notifyState(null);
     }
 
     //deal 3 community cards
@@ -81,6 +165,7 @@ public class GameEngine{
         }
         System.out.println("\n=== FLOP ===");
         displayCommunityCards();
+        notifyState(null);
     }
 
     //deal 1 community card
@@ -91,6 +176,7 @@ public class GameEngine{
         table.addCommunityCard(c);
         System.out.println("\n=== TURN ===");
         displayCommunityCards();
+        notifyState(null);
     }
 
     //easier understanding of game function/flow
@@ -101,7 +187,10 @@ public class GameEngine{
         table.addCommunityCard(c);
         System.out.println("\n=== RIVER ===");
         displayCommunityCards();
+        notifyState(null);
     }
+    
+
 
     private void displayCommunityCards(){
         System.out.print("River: ");
@@ -111,6 +200,34 @@ public class GameEngine{
         System.out.println();
     }
 
+    /*private GameState buildGameState(int activePlayerIndex){
+        GameState gs = new GameState();
+        gs.pot = table.getPot();
+        gs.communityCards = new ArrayList<>(table.getCommunityCards());
+        gs.activePlayerSeat = activePlayerIndex;
+
+        gs.players = new ArrayList<>();
+        List<Player> players = table.getPlayers(); 
+
+        for(int i = 0; i < players.size(); i++){
+            Player p = players.get(i);
+
+            PlayerState ps = new PlayerState(i);
+            ps.name = p.getName();
+            ps.chips = p.getChips();
+            ps.hole1 = p.getHand().size() > 0 ? p.getHand().get(0) : null;
+            ps.hole2 = p.getHand().size() > 1 ? p.getHand().get(1) : null;
+            ps.folded = p.isFolded();
+            ps.allIn = p.isAllIn();
+            //pass and play rules:
+            //only acting player cards are face up
+            ps.faceUp = (i == activePlayerIndex); // only show active player's cards
+            ps.active = (i == activePlayerIndex);
+
+            gs.players.add(ps);
+        }
+        return gs;
+    }*/
     /**
      * Main betting logic
      * @param isPreFlop true if this is pre-flop betting, false otherwise
@@ -136,65 +253,60 @@ public class GameEngine{
         boolean firstRound = true;
 
         while(!bettingComplete){
-            Player currentPlayer = players.get(currentPlayerIndex);
-
-            // Skip folded or all-in players
+            Player currentPlayer = players.get(currentPlayerIndex); 
             if(currentPlayer.isFolded() || currentPlayer.isAllIn()){
+                // Skip folded or all-in players
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-                
-                // Check if we've completed the circle
                 if(currentPlayerIndex == startIndex){
                     firstRound = false;
                 }
-                
                 continue;
             }
-
-            // Check if only one player remains
-            if(table.getPlayersInHand() == 1){
-                bettingComplete = true;
+            if(table.getPlayersInHand() <= 1){
+                // Only one player remains, end betting
                 break;
             }
+            notifyState(currentPlayer);
 
-            // Calculate amount needed to call
             int amountToCall = table.getCurrentBet() - currentPlayer.getCurrentBet();
+            //ask GUI for action
+            String action = (listener != null) ?
+                listener.requestPlayerAction(currentPlayer) : null;
+            if(action == null){
+                //Defensive : treat null as check/fold
+                action = (amountToCall == 0 ? "CHECK" : "FOLD");
+            } 
+            action = action.toUpperCase();
 
-            // Display player's turn
-            System.out.println("\n" + currentPlayer.getName() + "'s turn");
-            System.out.println("Chips: $" + currentPlayer.getChips());
-            System.out.println("You've bet this round: $" + currentPlayer.getCurrentBet());
-            if(amountToCall > 0){
-                System.out.println("Amount to call: $" + amountToCall);
-            }
-            System.out.println("Your cards: " + currentPlayer.getHand());
-            
-            // Show community cards if any
-            if(!table.getCommunityCards().isEmpty()){
-                displayCommunityCards();
-            }
-
-            System.out.println("Pot: $" + table.getPot());
-
-            // Get player action
-            String action = getPlayerAction(currentPlayer);
-            
-            switch(action.toUpperCase()){
+            switch(action){
                 case "FOLD":
                     currentPlayer.fold();
                     System.out.println(currentPlayer.getName() + " folds.");
                     break;
                     
                 case "CHECK":
-                    System.out.println(currentPlayer.getName() + " checks.");
+                    if(amountToCall > 0){
+                        if(amountToCall <= currentPlayer.getChips()){
+                            int paid = currentPlayer.placeBet(amountToCall);
+                            table.addToPot(paid);
+                            System.out.println(currentPlayer.getName() + " (illegal CHECK) auto-calls $" + amountToCall);
+                        } else{
+                            currentPlayer.fold();
+                            System.out.println(currentPlayer.getName() + " cannot check and folds.");
+                        }
+                    } else{
+                        System.out.println(currentPlayer.getName() + " checks.");
+                    }
                     break;
                     
                 case "CALL":
-                    int callAmount = table.getCurrentBet() - currentPlayer.getCurrentBet();
-                    int actualCall = currentPlayer.placeBet(callAmount);
-                    table.addToPot(actualCall);
-                    System.out.println(currentPlayer.getName() + " calls $" + actualCall + " (total bet: $" + currentPlayer.getCurrentBet() + ")");
+                    if(amountToCall > 0){
+                        int paid = currentPlayer.placeBet(amountToCall);
+                        table.addToPot(paid);
+                    }
+                    System.out.println(currentPlayer.getName() + " calls $" + amountToCall + " (total bet: $" + currentPlayer.getCurrentBet() + ")");
                     break;
-                    
+               /* --------Implement later-------     
                 case "RAISE":
                     System.out.print("Raise to (total bet amount): $");
                     int raiseAmount = sc.nextInt();
@@ -212,22 +324,22 @@ public class GameEngine{
                     lastRaiserIndex = currentPlayerIndex;
                     System.out.println(currentPlayer.getName() + " raises to $" + currentPlayer.getCurrentBet());
                     break;
-                    
+                */ 
                 case "ALLIN":
                     int allInAmount = currentPlayer.getChips();
-                    currentPlayer.placeBet(allInAmount);
-                    table.addToPot(allInAmount);
-                    
-                    if(currentPlayer.getCurrentBet() > table.getCurrentBet()){
-                        table.setCurrentBet(currentPlayer.getCurrentBet());
-                        lastRaiserIndex = currentPlayerIndex;
+                    if(allInAmount > 0){
+                        int paidAllIn = currentPlayer.placeBet(allInAmount);
+                        table.addToPot(paidAllIn);
+                        if(currentPlayer.getCurrentBet() > table.getCurrentBet()){
+                            table.setCurrentBet(currentPlayer.getCurrentBet());
+                            lastRaiserIndex = currentPlayerIndex;
+                        }
                     }
                     System.out.println(currentPlayer.getName() + " goes ALL-IN with $" + allInAmount + " (total bet: $" + currentPlayer.getCurrentBet() + ")");
                     break;
             }
-
-            // Move to next player
             int prevIndex = currentPlayerIndex;
+            // Move to next player
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             
             // Check if we've completed the circle
@@ -235,47 +347,130 @@ public class GameEngine{
                 firstRound = false;
             }
 
-            // Check if betting round is complete
             boolean allMatched = true;
             int activePlayers = 0;
-            
-            for(Player p : players){
+            int currentBet = table.getCurrentBet();
+
+            for(Player p : table.getPlayers()){
                 if(!p.isFolded() && !p.isAllIn()){
                     activePlayers++;
-                    if(p.getCurrentBet() != table.getCurrentBet()){
+                    if(p.getCurrentBet() != currentBet){
                         allMatched = false;
                         break;
                     }
                 }
             }
-
-            // Betting complete if:
-            // 1. Only one active player remains, OR
-            // 2. All active players have matched the current bet AND
-            //    - Either no one has raised (lastRaiserIndex == -1), OR
-            //    - Action has returned to the last raiser
             if(activePlayers <= 1){
+                // Only one player remains
                 bettingComplete = true;
             } else if(allMatched && !firstRound){
+                // All active players have matched the current bet and we've gone around at least once
                 if(lastRaiserIndex == -1){
-                    // No one raised, everyone checked/called
                     bettingComplete = true;
                 } else if(prevIndex == lastRaiserIndex){
-                    // Action just completed with the last raiser
                     bettingComplete = true;
                 }
             }
-        }
 
-        // Reset current bets for next round
+            // Check if betting round is complete
+            //bettingComplete = isBettingRoundComplete();
+            
+        }
         table.resetCurrentBet();
-        System.out.println("\n--- Betting round complete. Pot: $" + table.getPot() + " ---\n");
+        notifyState(null);
     }
 
+    /*private boolean isBettingRoundComplete(){
+        List<Player> players = table.getPlayers();
+        int activePlayers = 0;
+        int currentBet = table.getCurrentBet();
+
+        for(Player p : table.getPlayers()){
+            if(!p.isFolded() && !p.isAllIn()){
+                activePlayers++;
+                if(p.getCurrentBet() < currentBet){
+                    return false;
+                }
+            }
+        }
+        return activePlayers <= 1 || activePlayers > 0;
+    }*/
+    
+    private void handleShowdown(){
+        List<Player> players = table.getPlayers();
+        List<Player> contenders = new ArrayList<>();
+        for(Player p : players){
+            if(!p.isFolded()){
+                contenders.add(p);
+            }
+        }
+        if(contenders.size() == 1){
+            Player winner = contenders.get(0);
+            //award entire pot to winner
+            winner.addChips(table.getPot());
+            System.out.println(winner.getName() + " wins the pot of $" + table.getPot() + " by default (all others folded).");
+            notifyState(null);
+            return;
+        }
+        //multiple people to showdown
+        List<HAND_WEIGHT> weights = new ArrayList<>();
+        for(Player p : contenders){
+            HAND_WEIGHT weight = handChecker.checkWeight(p, table.getCommunityCards());
+            weights.add(weight);
+        }
+        //TODO:
+        // -find the best HAND_WEIGHT(s)
+        // -split pot if tie
+        //update chips accordingly
+        notifyState(null);
+    }
+    /**
+     * Build and send current game state to GUI
+     * @param actingPlayer player whose turn it is, null if none
+     */
+    private void notifyState(Player actingPlayer){
+        if(listener == null) return;
+
+        GameState gs = new GameState();
+        gs.players = new ArrayList<>();
+        gs.communityCards = new ArrayList<>(table.getCommunityCards());
+        gs.pot = table.getPot();
+
+        gs.activePlayerSeat = -1;
+        gs.currentPlayerSeat = -1;
+
+        List<Player> players = table.getPlayers();
+
+        for(int i = 0; i < players.size(); i++){
+            Player p = players.get(i);
+
+            PlayerState ps = new PlayerState(i);
+            ps.seat = i;
+            ps.name = p.getName();
+            ps.chips = p.getChips();
+            ps.folded = p.isFolded();
+            ps.allIn = p.isAllIn();
+
+            List<Card> hand = p.getHand();
+            ps.hole1 = (hand.size() > 0) ? hand.get(0) : null;
+            ps.hole2 = (hand.size() > 1) ? hand.get(1) : null;
+
+            boolean showdown = (table.getCommunityCards().size() == 5);
+            ps.faceUp = (actingPlayer != null && p == actingPlayer) || showdown;
+            ps.active = (actingPlayer != null && p == actingPlayer);
+            if(ps.active){
+                gs.currentPlayerSeat = i;
+                gs.activePlayerSeat = i;
+            }
+            gs.players.add(ps); 
+        }
+        listener.onStateUpdated(gs);
+    }
     /**
      * Get valid action from player
+     * NO LONGER NEEDED WITH GUI
      */
-    private String getPlayerAction(Player player){
+    /*private String getPlayerAction(Player player){
         int amountToCall = table.getCurrentBet() - player.getCurrentBet();
         
         while(true){
@@ -307,9 +502,9 @@ public class GameEngine{
                 System.out.println("Invalid action. Please try again.");
             }
         }
-    }
+    }*/
 
-    public void start(){
+    /*public void start(){
         System.out.println("Welcome to Texas Hold'em!");
 
         for(int i = 1; i <= numPlayers; i++){
@@ -364,5 +559,5 @@ public class GameEngine{
         
         // TODO: Determine winner and award pot
         System.out.println("\nFinal Pot: $" + table.getPot());
-    }    
+    }*/
 }

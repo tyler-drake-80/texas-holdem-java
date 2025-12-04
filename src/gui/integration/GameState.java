@@ -13,4 +13,5 @@ public class GameState {
     public List<Card> communityCards;
     public int pot;
     public int activePlayerSeat;
+    public int currentPlayerSeat;
 }

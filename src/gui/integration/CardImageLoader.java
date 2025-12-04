@@ -1,16 +1,23 @@
 package gui.integration;
 
 import cards.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.awt.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class CardImageLoader {
-    private static final String IMAGE_PATH = "/Cards/Classic/"; 
-    private static final String BACK_PATH = "/Backs/"; 
+    private static final String IMAGE_DIR = "resources/Cards/Classic/"; 
+    private static final String BACK_DIR = "resources/Backs/back.png"; 
+
+    private static final int CARD_WIDTH = 80;
+    private static final int CARD_HEIGHT = 120;
 
     private static final Map<String, ImageIcon> cardImageCache = new HashMap<>();
+    private static ImageIcon backImage;
 
     public static void loadAllCards(){
         System.out.println("Loading card images...");
@@ -20,22 +27,28 @@ public class CardImageLoader {
                 String code = suitToPrefix(s) + valueToNumber(v);
                 String filename = code + ".png";
 
-                try{
-                    ImageIcon icon = new ImageIcon(
-                        CardImageLoader.class.getResource(IMAGE_PATH + filename));
-
-                    if(icon.getIconWidth() == -1){
-                        throw new Exception("Image not found: " + filename);
-                    }
-
+                ImageIcon icon = loadAndScale(IMAGE_DIR + filename);
+                if(icon != null){
                     cardImageCache.put(code, icon);
-                
-                } catch (Exception e) {
-                    System.err.println("Error loading image for " + filename + ": " + e.getMessage());
+                } else {
+                    System.err.println("Failed to load image for " + code);
                 }
             }
         }
+        backImage = loadAndScale(BACK_DIR);
         System.out.println("Loaded " + cardImageCache.size() + " card images.");
+    }
+    private static ImageIcon loadAndScale(String path){
+        try{
+            BufferedImage img = ImageIO.read(new File(path));
+            if(img == null) return null;
+            Image scaled = img.getScaledInstance(
+                 CARD_WIDTH, CARD_HEIGHT, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        } catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static ImageIcon getCardImage(Card card){
@@ -43,8 +56,7 @@ public class CardImageLoader {
         return cardImageCache.get(code);
     }
     public static ImageIcon getBackImage(){
-        return new ImageIcon(
-            CardImageLoader.class.getResource(BACK_PATH + "back.png"));
+        return backImage;
     }
 
     private static String suitToPrefix(SUIT suit){
@@ -58,15 +70,15 @@ public class CardImageLoader {
     }
     private static String valueToNumber(VALUE value){
         switch(value){
-            case ACE: return "1";
-            case TWO: return "2";
-            case THREE: return "3";
-            case FOUR: return "4";
-            case FIVE: return "5";
-            case SIX: return "6";
-            case SEVEN: return "7";
-            case EIGHT: return "8";
-            case NINE: return "9";
+            case ACE: return "01";
+            case TWO: return "02";
+            case THREE: return "03";
+            case FOUR: return "04";
+            case FIVE: return "05";
+            case SIX: return "06";
+            case SEVEN: return "07";
+            case EIGHT: return "08";
+            case NINE: return "09";
             case TEN: return "10";
             case JACK: return "11";
             case QUEEN: return "12";
