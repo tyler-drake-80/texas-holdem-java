@@ -17,6 +17,9 @@ public class TablePanel extends JPanel{
     private List<PlayerPanel> playerPanels;
     private BoardPanel boardPanel;
     private static final int MAX_PLAYERS = 8;
+    //label for winner display
+    private JLabel winnerLabel;
+    
 
     public TablePanel(){
         setLayout(null); // Use absolute positioning for oval arrangement
@@ -34,6 +37,14 @@ public class TablePanel extends JPanel{
 
         boardPanel = new BoardPanel();
         add(boardPanel);
+
+        winnerLabel = new JLabel("", SwingConstants.CENTER);
+        winnerLabel.setFont(new Font("Arial", Font.BOLD, 26));
+        winnerLabel.setForeground(Color.YELLOW);
+        winnerLabel.setOpaque(true);
+        winnerLabel.setBackground(new Color(0,0,0,150));
+        setComponentZOrder(winnerLabel, 0);//bring to front
+        add(winnerLabel);
     }
 
     @Override
@@ -43,11 +54,12 @@ public class TablePanel extends JPanel{
         int width = getWidth();
         int height = getHeight();
         
+        winnerLabel.setBounds(width / 2, height / 2, 600, 50);
         // Center area for board (community cards and pot)
         int centerX = width / 2;
         int centerY = height / 2;
-        int boardWidth = 400;
-        int boardHeight = 200;
+        int boardWidth = 500;
+        int boardHeight = 240;
         boardPanel.setBounds(centerX - boardWidth/2, centerY - boardHeight/2, 
                             boardWidth, boardHeight);
         
@@ -69,8 +81,8 @@ public class TablePanel extends JPanel{
             int y = ovalCenterY - (int)(ovalHeight / 2 * Math.sin(angle));
             
             // Player panel size
-            int panelWidth = 180;
-            int panelHeight = 120;
+            int panelWidth = 175;
+            int panelHeight = 180;
             
             playerPanels.get(i).setBounds(x - panelWidth/2, y - panelHeight/2, 
                                          panelWidth, panelHeight);
@@ -102,11 +114,22 @@ public class TablePanel extends JPanel{
             panel.setCards(ps.hole1, ps.hole2, ps.cardsFaceUp);
             panel.setActive(ps.active);
             panel.setHandRanking(ps.handRanking);
+            panel.setDealer(ps.seatIndex == state.dealerSeat);
         }
         
         boardPanel.setCommunityCards(state.communityCards);
         boardPanel.setPot(state.pot);
         
+        if(state.winnerText != null && !state.winnerText.isEmpty()){
+            winnerLabel.setText(state.winnerText);
+            winnerLabel.setVisible(true);
+            winnerLabel.setBackground(Color.RED);
+            winnerLabel.repaint();
+            winnerLabel.revalidate();
+            setComponentZOrder(winnerLabel, 0); // bring to front
+        } else {
+            winnerLabel.setVisible(false);
+        }
         revalidate();
         repaint();
     }
@@ -149,6 +172,9 @@ public class TablePanel extends JPanel{
         public List<Card> communityCards = new ArrayList<>();
         public int pot;
 
+        public int dealerSeat;
+        public String winnerText = ""; // Text to display winner info
+            
         public TableState pot(int amount){
             this.pot = amount;
             return this;

@@ -11,6 +11,7 @@ public class Table{
     private int currentBet = 0; // The current bet that needs to be matched
     private int smallBlind = 10;
     private int bigBlind = 20;
+    private String winnerText = "";
 
     public Table(){
         players = new ArrayList<>();
@@ -127,5 +128,12 @@ public class Table{
             }
             System.out.println(p.getName() + "'s hand: " + p.getHand());
         }
+    }
+
+    public void setWinnerText(String text){
+        this.winnerText = text;
+    }
+    public String getWinnerText(){
+        return this.winnerText;
     }
 }

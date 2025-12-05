@@ -1,4 +1,20 @@
 11/21 - Finished basic player
 11/23 - Finished cards package, started on GameEngine and Table
-11/24 - Added basic table logic, added chips to players, basic game flow to GameEngine
-12/02 - fixed compile errors, added necessary components for table GUI 
+11/24 - LOGIC--
+        -Added basic table logic 
+        -added chips to players 
+        -basic game flow to GameEngine
+12/02 - GUI START --
+        -fixed compile errors 
+        -added necessary components for table GUI 
+        -added card resources and CardLoader
+12/03 - STATE TRACKING/BUGS--
+        -added gui state tracking 
+        -fixed CardLoader, 
+12/04 - FINISHING TOUCHES --
+        -fixed playerPanel sizing 
+        -added raise functionality 
+        -added winner label
+        -fixed player's cards faceUp on river before showdown
+        -added dealer button mark
+        -updated README 

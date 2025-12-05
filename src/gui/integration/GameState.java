@@ -14,4 +14,6 @@ public class GameState {
     public int pot;
     public int activePlayerSeat;
     public int currentPlayerSeat;
+    public String winnerText = "";//winner announcement
+    public int dealerSeat;
 }

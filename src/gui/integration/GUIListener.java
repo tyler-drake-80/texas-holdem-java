@@ -16,13 +16,19 @@ public class GUIListener implements GameListener {
     /**This variable stores the result returned when user clicks a button */
     private volatile String pendingAction = null;
 
+    //fix for synchronization issues
+    private final Object actionLock = new Object();
+
     public GUIListener(TablePanel tablePanel, ActionPanel actionPanel) {
         this.tablePanel = tablePanel;
         this.actionPanel = actionPanel;
         this.handChecker = new CheckHand();
 
         actionPanel.setActionConsumer(action -> {
+            synchronized (actionLock) {
                 pendingAction = action;
+                actionLock.notifyAll();
+            }
         });
     }
     
@@ -56,8 +62,11 @@ public class GUIListener implements GameListener {
 
             ts.players.add(pstate);
         }
+        //winner text
+        ts.winnerText = gs.winnerText;
         ts.communityCards = gs.communityCards;
         ts.pot = gs.pot;
+        ts.dealerSeat = gs.dealerSeat;
         return ts;
     }
     

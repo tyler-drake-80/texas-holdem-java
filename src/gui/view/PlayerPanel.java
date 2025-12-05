@@ -26,7 +26,7 @@ public class PlayerPanel extends JPanel{
     private Card currentCard1;
     private Card currentCard2;
     private boolean currentFaceUp;
-
+    private JLabel dealerLabel;
     private Border defaultBorder;
     private Border activeBorder;
     
@@ -61,6 +61,15 @@ public class PlayerPanel extends JPanel{
         handRankingLabel.setForeground(Color.CYAN);
         handRankingLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        dealerLabel = new JLabel("BTN");
+        dealerLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        dealerLabel.setForeground(Color.BLACK);
+        dealerLabel.setBackground(new Color(255, 215, 0));
+        dealerLabel.setOpaque(true);
+        dealerLabel.setVisible(false); // Hidden by default
+        dealerLabel.setAlignmentX(Component.CENTER_ALIGNMENT); 
+
+        infoPanel.add(dealerLabel);
         infoPanel.add(nameLabel);
         infoPanel.add(Box.createVerticalStrut(2));
         infoPanel.add(chipsLabel);
@@ -73,7 +82,9 @@ public class PlayerPanel extends JPanel{
         
         // Hole cards panel
         JPanel cardsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 3));
+        cardsPanel.setPreferredSize(new Dimension(200, 130));
         cardsPanel.setOpaque(false);
+        this.setPreferredSize(new Dimension(200, 200));
 
         card1Panel = new CardPanel(null, false);
         card2Panel = new CardPanel(null, false);
@@ -88,7 +99,11 @@ public class PlayerPanel extends JPanel{
         activeBorder = new LineBorder(Color.YELLOW, 3);
         setBorder(defaultBorder);
     }
-    
+
+    public void setDealer(boolean isDealer){
+        dealerLabel.setVisible(isDealer);
+    } 
+
     public void setPlayerName(String name){
         nameLabel.setText(name);
     }
