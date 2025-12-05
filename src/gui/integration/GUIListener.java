@@ -2,6 +2,7 @@ package gui.integration;
 
 import cards.Card;
 import game.CheckHand;
+import game.GameEngine;
 import game.HAND_WEIGHT;
 import gui.view.*;
 import players.Player;
@@ -12,22 +13,37 @@ public class GUIListener implements GameListener {
     private final TablePanel tablePanel;
     private final ActionPanel actionPanel;
     private final CheckHand handChecker;
-    
-    /**This variable stores the result returned when user clicks a button */
+    private final GameEngine engine; 
+
+    /** This variable stores the result returned when user clicks a betting button */
     private volatile String pendingAction = null;
 
-    //fix for synchronization issues
+    // Lock for synchronization between game thread and EDT
     private final Object actionLock = new Object();
 
-    public GUIListener(TablePanel tablePanel, ActionPanel actionPanel) {
+    public GUIListener(TablePanel tablePanel, ActionPanel actionPanel, GameEngine engine) {
         this.tablePanel = tablePanel;
         this.actionPanel = actionPanel;
+        this.engine = engine;
         this.handChecker = new CheckHand();
 
         actionPanel.setActionConsumer(action -> {
-            synchronized (actionLock) {
-                pendingAction = action;
-                actionLock.notifyAll();
+            if ("NEXT_HAND".equals(action)) {
+                // User clicked "Next Hand" at showdown:
+                // 1) wake the game thread (waiting in waitForNextHand)
+                // 2) hide the button
+                engine.resumeNextHand();
+                actionPanel.hideNextHandButton();
+                // clear any stale pendingAction
+                synchronized (actionLock) {
+                    pendingAction = null;
+                }
+            } else {
+                // Normal betting actions (FOLD/CHECK/CALL/RAISE/ALL_IN)
+                synchronized (actionLock) {
+                    pendingAction = action;
+                    actionLock.notifyAll();
+                }
             }
         });
     }
@@ -42,7 +58,7 @@ public class GUIListener implements GameListener {
         // Convert GameState to TableState for the TablePanel
         TablePanel.TableState ts = new TablePanel.TableState();
 
-        for(gui.integration.PlayerState ps : gs.players) {
+        for (gui.integration.PlayerState ps : gs.players) {
             TablePanel.PlayerState pstate = new TablePanel.PlayerState(ps.seat);
             pstate.name = ps.name;
             pstate.chips = ps.chips;
@@ -62,14 +78,22 @@ public class GUIListener implements GameListener {
 
             ts.players.add(pstate);
         }
-        //winner text
+        // winner + dealer
         ts.winnerText = gs.winnerText;
         ts.communityCards = gs.communityCards;
         ts.pot = gs.pot;
         ts.dealerSeat = gs.dealerSeat;
         return ts;
     }
-    
+
+    @Override
+    public void onAwaitNextHand() {
+        // Hand is over, winner text is shown.
+        // Disable betting buttons and show "Next Hand".
+        actionPanel.disableAll();
+        actionPanel.showNextHandButton();
+    } 
+
     /**
      * Formats hand ranking for display
      */
@@ -93,17 +117,26 @@ public class GUIListener implements GameListener {
 
     @Override
     public String requestPlayerAction(Player player) {
-        //Enable buttons appropriate for action
+        // Normal betting turn:
+        // hide Next Hand button (should not be clickable mid-hand)
+        actionPanel.hideNextHandButton();
         actionPanel.enableForPlayer(player);
-        pendingAction = null;
 
-        while(pendingAction == null) {
-            try {
-                Thread.sleep(20); // Sleep briefly to avoid busy-waiting
-            } catch (Exception ignored) {}
+        String result;
+        synchronized (actionLock) {
+            pendingAction = null;
+
+            while (pendingAction == null) {
+                try {
+                    actionLock.wait();
+                } catch (InterruptedException ignored) {}
+            }
+
+            result = pendingAction;
+            pendingAction = null;
         }
+
         actionPanel.disableAll();
-        return pendingAction;
+        return result;
     }
-    
 }

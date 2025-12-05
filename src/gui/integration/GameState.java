@@ -16,4 +16,6 @@ public class GameState {
     public int currentPlayerSeat;
     public String winnerText = "";//winner announcement
     public int dealerSeat;
+    public boolean waitingForNextHand = false;
+
 }

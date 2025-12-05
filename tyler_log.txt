@@ -17,4 +17,8 @@
         -added winner label
         -fixed player's cards faceUp on river before showdown
         -added dealer button mark
+        -added play next hand feature
+        -cleaned up files, ensured proper documentation
+        -added makefile
+        -added manifest, runnable jar file
         -updated README 

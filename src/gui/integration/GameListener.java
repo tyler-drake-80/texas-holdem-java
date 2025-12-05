@@ -21,6 +21,11 @@ public interface GameListener {
     void onStateUpdated(GameState state);
 
     /**
+     * Called whenever the GameEngine is awaiting the next hand to start.
+     */
+    void onAwaitNextHand();
+
+    /**
      * Called whenever the GUI has a new player action to send to the GameEngine.
      * @param action The player action to process.
      * @return a string representing the chosen action: "CHECK", "CALL", "RAISE", "FOLD", "ALL_IN"

@@ -47,7 +47,7 @@ public class GUIGame extends JFrame{
         //initialize game engine
         engine = new GameEngine();
         
-        GUIListener guiListener = new GUIListener(tablePanel, actionPanel);
+        GUIListener guiListener = new GUIListener(tablePanel, actionPanel, engine);
         engine.setListener(guiListener);
     }
 
@@ -73,7 +73,7 @@ public class GUIGame extends JFrame{
         
         // Start game thread
         Thread gameThread = new Thread(() -> {
-            engine.startPassAndPlayHand();
+            while (true){engine.startPassAndPlayHand();}
         });
         gameThread.start();
     }

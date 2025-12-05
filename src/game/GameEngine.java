@@ -27,6 +27,8 @@ public class GameEngine{
     private int dealerIndex = 0; // Tracks dealer position
     private int startingChips = 1000; // Default starting chips
     private int numberOfPlayers = 4; // Default number of players (2-8)
+    private final Object nextHandLock = new Object();
+    private boolean waitingForNextHand = false;
     //Stored winner text for GUI
     //private String lastWinnerMessage = "";
 
@@ -35,7 +37,22 @@ public class GameEngine{
         this.deck = new Deck();
         this.handChecker = new CheckHand();        
     }
-
+    public void waitForNextHand(){
+        synchronized(nextHandLock){
+            waitingForNextHand = true;
+            while(waitingForNextHand){
+                try{
+                    nextHandLock.wait();
+                } catch(InterruptedException ignored){}
+            }
+        }
+    }
+    public void resumeNextHand(){
+        synchronized(nextHandLock){
+            waitingForNextHand = false;
+            nextHandLock.notifyAll();
+        }
+    }
     public Table getTable(){
         return table;
     }
@@ -89,6 +106,8 @@ public class GameEngine{
 
         // Move dealer button
         dealerIndex = (dealerIndex + 1) % table.getPlayers().size();
+        waitForNextHand();
+        deck.reset();
     }
     /*
     * Resets hand flags on players: folded, all-in, current bet, hand cards
@@ -193,6 +212,86 @@ public class GameEngine{
         }
         System.out.println();
     }
+    private void resetDeck(){
+        deck.reset();
+        deck.shuffle();
+    }
+    private GameState buildGameState(Player actingPlayer) {
+        GameState gs = new GameState();
+        gs.players = new ArrayList<>();
+        gs.communityCards = new ArrayList<>(table.getCommunityCards());
+        gs.pot = table.getPot();
+        gs.activePlayerSeat = -1;
+        gs.currentPlayerSeat = -1;
+
+        List<Player> players = table.getPlayers();
+
+        for (int i = 0; i < players.size(); i++) {
+            Player p = players.get(i);
+
+            gui.integration.PlayerState ps = new gui.integration.PlayerState(i);
+            ps.seat = i;
+            ps.name = p.getName();
+            ps.chips = p.getChips();
+            ps.folded = p.isFolded();
+            ps.allIn = p.isAllIn();
+
+            List<Card> hand = p.getHand();
+            ps.hole1 = hand.size() > 0 ? hand.get(0) : null;
+            ps.hole2 = hand.size() > 1 ? hand.get(1) : null;
+
+            boolean showdown = table.getCommunityCards().size() == 5;
+            ps.faceUp = (actingPlayer != null && p == actingPlayer) || showdown;
+            ps.active = (actingPlayer != null && p == actingPlayer);
+
+            if (ps.active) {
+                gs.activePlayerSeat = i;
+                gs.currentPlayerSeat = i;
+            }
+
+            gs.players.add(ps);
+        }
+
+        return gs;
+    }
+
+    public void startGameLoop() {
+        ensurePlayers();
+
+        while (true) {
+            startSingleHand();  // play exactly one hand
+
+            // Now WAIT for GUI to send NEXT_HAND
+            notifyStateShowdownWait();  // show winner label, buttons disabled except NEXT_HAND
+
+            String action = listener.requestPlayerAction(null);
+            if (!action.equals("NEXT_HAND")) {
+                break; // future-proof exit if needed
+            }
+
+            resetDeck();
+        }
+    }
+    public void startSingleHand() {
+        resetPlayersForNewHand();
+        assignPositions();
+        deck.shuffle();   // ADD THIS
+
+        postBlinds();
+        preFlop();
+        bet(true);
+
+        if (table.getPlayersInHand() > 1) { flop(); bet(false); }
+        if (table.getPlayersInHand() > 1) { turn(); bet(false); }
+        if (table.getPlayersInHand() > 1) { river(); bet(false); }
+
+        handleShowdown(); // produces winner label
+    }
+    private void notifyStateShowdownWait() {
+        GameState gs = buildGameState(null);
+        gs.waitingForNextHand = true; // TablePanel shows winner & Next Hand button
+        listener.onStateUpdated(gs);
+    }
 
     /**
      * Main betting logic
@@ -264,7 +363,10 @@ public class GameEngine{
                     continue;  
                 }
 
-
+                if(action.equals("NEXT_HAND")){
+                    // Ignore NEXT_HAND during betting
+                    return;
+                }
                 
                 switch(action.toUpperCase()){
                     case "FOLD":
@@ -413,6 +515,7 @@ public class GameEngine{
         }
         table.setWinnerText(resultText.toString());
         notifyState(null,true);
+        listener.onAwaitNextHand();
     }
     
     /**

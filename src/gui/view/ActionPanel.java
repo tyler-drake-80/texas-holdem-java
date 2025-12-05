@@ -19,6 +19,7 @@ public class ActionPanel extends JPanel {
     private final JButton callButton = new JButton("Call");
     private final JButton raiseButton = new JButton("Raise");
     private final JButton allInButton = new JButton("All-in");
+    private final JButton nextHandButton = new JButton("Next Hand");
 
     /** Send selected action back to GUIListener */
     private Consumer<String> actionConsumer;
@@ -32,37 +33,26 @@ public class ActionPanel extends JPanel {
         add(callButton);
         add(raiseButton);
         add(allInButton);
+        add(nextHandButton);
 
         foldButton.addActionListener(e -> send("FOLD"));
         checkButton.addActionListener(e -> send("CHECK"));
         callButton.addActionListener(e -> send("CALL"));
         raiseButton.addActionListener(e -> handleRaise());
-        /*raiseButton.addActionListener(e -> {
-         SwingUtilities.invokeLater(()-> {
-               String input = JOptionPane.showInputDialog(
-                this,
-                "Enter raise amount:",
-                "Raise",
-                JOptionPane.PLAIN_MESSAGE
-            );
-            if(input == null) return;
-            input = input.trim(); 
-            if(!input.matches("\\d+")) {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Invalid amount. Please enter a positive integer.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
-            send("RAISE" + input);
-
-         });
-      });*/
         allInButton.addActionListener(e -> send("ALL_IN"));
+        nextHandButton.addActionListener(e -> send("NEXT_HAND"));
+        nextHandButton.setVisible(false); // only show when hand is over
 
         disableAll(); // start disabled, but still visible
+    }
+    
+    public void showNextHandButton(){
+        nextHandButton.setEnabled(true);
+        nextHandButton.setVisible(true);
+    }
+    public void hideNextHandButton(){
+        nextHandButton.setEnabled(false);
+        nextHandButton.setVisible(false);
     }
 
    private void handleRaise() {
@@ -127,6 +117,16 @@ public class ActionPanel extends JPanel {
         revalidate();
         repaint();
     }
+public void showOnlyNextHand() {
+    foldButton.setEnabled(false);
+    checkButton.setEnabled(false);
+    callButton.setEnabled(false);
+    raiseButton.setEnabled(false);
+    allInButton.setEnabled(false);
+
+    nextHandButton.setVisible(true);
+    nextHandButton.setEnabled(true);
+}
 
     /**
      * Disable all buttons (but keep panel visible)

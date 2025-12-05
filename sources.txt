@@ -7,7 +7,6 @@ C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\game\GameEngin
 C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\game\HAND_WEIGHT.java 
 C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\game\Table.java 
 C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\gui\app\GUIGame.java 
-C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\gui\app\PokerMain.java 
 C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\gui\integration\CardImageLoader.java 
 C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\gui\integration\GameListener.java 
 C:\Users\tdbre\OneDrive\Desktop\COP3252\HWX\texas-holdem-java\src\gui\integration\GameState.java 

@@ -17,6 +17,14 @@ public class Deck{
         }
         Collections.shuffle(cards);
     }
+    public void shuffle(){
+        Collections.shuffle(cards);
+    }
+
+    public void reset(){
+        index = 0;
+        Collections.shuffle(cards);
+    }
 
     public Card deal(){
         if(index >= cards.size()){
