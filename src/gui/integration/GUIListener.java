@@ -8,7 +8,12 @@ import gui.view.*;
 import players.Player;
 
 import java.util.List;
-
+/**
+ * GUIListener implements GameListener to update the GUI based on game state changes
+ * and to handle user actions during betting rounds.
+ * It communicates with TablePanel to update the display and ActionPanel
+ * to get user input.
+ */
 public class GUIListener implements GameListener {
     private final TablePanel tablePanel;
     private final ActionPanel actionPanel;
@@ -85,7 +90,9 @@ public class GUIListener implements GameListener {
         ts.dealerSeat = gs.dealerSeat;
         return ts;
     }
-
+    /**
+     * Called when the game is awaiting the next hand to start
+     */
     @Override
     public void onAwaitNextHand() {
         // Hand is over, winner text is shown.
@@ -114,7 +121,11 @@ public class GUIListener implements GameListener {
             default:             return "";
         }
     }
-
+    /**
+     *  Requests player action during their betting turn
+     * @return The action chosen by the player (FOLD, CHECK, CALL, RAISE, ALL_IN)
+     * @param player The player whose turn it is to act
+     */
     @Override
     public String requestPlayerAction(Player player) {
         // Normal betting turn:

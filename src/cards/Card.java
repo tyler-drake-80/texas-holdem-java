@@ -1,5 +1,7 @@
 package cards;
-
+/**
+ * Represents a playing card with suit, value, and face-up status.
+ */
 public class Card{
     private final SUIT suit;
     private final VALUE val;

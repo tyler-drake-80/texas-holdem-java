@@ -3,7 +3,10 @@ package game;
 import cards.*;
 import players.*;
 import java.util.*; 
-
+/**
+ * Represents the poker table, managing players, community cards, pot, and betting state.
+ * Includes methods to reset for new hands, track active players, and display hands.
+ */
 public class Table{
     private final List<Player> players;
     private final List<Card> communityCards;

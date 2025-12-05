@@ -1,7 +1,9 @@
 package cards;
 
 import java.util.*;
-
+/**
+ * Represents a standard deck of 52 playing cards
+ */
 public class Deck{
     private final List<Card> cards;
     private int index;

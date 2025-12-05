@@ -15,7 +15,7 @@ import players.Player;
  * 
  * Currently supports:
  * -4 player pass and play
- * -FOLD, CHECK, CALL, ALL_IN (no raises)
+ * -FOLD, CHECK, CALL, ALL_IN, RAISE, NEXT_HAND actions
  */
 public class GameEngine{
     private final Table table;
@@ -37,6 +37,9 @@ public class GameEngine{
         this.deck = new Deck();
         this.handChecker = new CheckHand();        
     }
+    /**
+     * Waits until resumeNextHand() is called
+     */
     public void waitForNextHand(){
         synchronized(nextHandLock){
             waitingForNextHand = true;
@@ -47,12 +50,18 @@ public class GameEngine{
             }
         }
     }
+    /**
+     * Resumes the game from waiting for next hand
+     */
     public void resumeNextHand(){
         synchronized(nextHandLock){
             waitingForNextHand = false;
             nextHandLock.notifyAll();
         }
     }
+    /**
+     * Standard accessors below
+     */
     public Table getTable(){
         return table;
     }
@@ -67,6 +76,9 @@ public class GameEngine{
     public void setNumberOfPlayers(int players){
         this.numberOfPlayers = players;
     }
+    /**
+     * Ensures table has players; if not, adds default players
+     */
     private void ensurePlayers(){
         if(!table.getPlayers().isEmpty()){
             return;
@@ -76,7 +88,10 @@ public class GameEngine{
             table.addPlayer(p);
         }
     }
-
+    /**
+     * No longer used -- replaced by startGameLoop()
+     * Plays a single hand of pass and play poker
+     */
     public void startPassAndPlayHand(){
         ensurePlayers();
 
@@ -193,8 +208,9 @@ public class GameEngine{
         displayCommunityCards();
         notifyState(null);
     }
-
-    //easier understanding of game function/flow
+    /**
+     * Same as turn but for river segment of game
+     */
     public void river(){ 
         deck.deal();//burn card
         Card c = deck.deal();
@@ -204,7 +220,9 @@ public class GameEngine{
         displayCommunityCards();
         notifyState(null);
     }
-    
+    /**
+     * Used before GUI implementation
+     */ 
     private void displayCommunityCards(){
         System.out.print("River: ");
         for(Card c : table.getCommunityCards()){
@@ -212,10 +230,17 @@ public class GameEngine{
         }
         System.out.println();
     }
+    /**
+     * Resets and shuffles the deck for a new hand
+     */
     private void resetDeck(){
         deck.reset();
         deck.shuffle();
     }
+    /**
+     * Build current game state for GUI
+     * @param actingPlayer player whose turn it is, null if none
+     */
     private GameState buildGameState(Player actingPlayer) {
         GameState gs = new GameState();
         gs.players = new ArrayList<>();
@@ -254,7 +279,10 @@ public class GameEngine{
 
         return gs;
     }
-
+    /**
+     * Main game loop for GUI-driven play using Next Hand button
+     * Driven by startSingleHand() method
+     */
     public void startGameLoop() {
         ensurePlayers();
 
@@ -272,6 +300,9 @@ public class GameEngine{
             resetDeck();
         }
     }
+    /**
+     * Plays a single hand of poker
+     */
     public void startSingleHand() {
         resetPlayersForNewHand();
         assignPositions();
@@ -287,6 +318,9 @@ public class GameEngine{
 
         handleShowdown(); // produces winner label
     }
+    /**
+     * Notify GUI to show winner and wait for Next Hand
+     */
     private void notifyStateShowdownWait() {
         GameState gs = buildGameState(null);
         gs.waitingForNextHand = true; // TablePanel shows winner & Next Hand button
@@ -433,7 +467,9 @@ public class GameEngine{
         table.resetCurrentBet();
         notifyState(null);
     }
-
+    /**
+     * Handles the showdown logic to determine the winner(s)
+     */
     private void handleShowdown(){
         List<Player> players = table.getPlayers();
         List<Player> contenders = new ArrayList<>();
@@ -599,6 +635,10 @@ public class GameEngine{
         }
         listener.onStateUpdated(gs);
     }
+    /**
+     * Build and send current game state to GUI
+     * Alias for notifyState with revealAll = false
+     */
     private void notifyState(Player actingPlayer){
         notifyState(actingPlayer, false);
     }

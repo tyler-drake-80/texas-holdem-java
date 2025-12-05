@@ -22,7 +22,9 @@ public class CardImageLoader {
 
     private static final Map<String, ImageIcon> cardImageCache = new HashMap<>();
     private static ImageIcon backImage;
-
+    /**
+     * Loads all card images into memory and scales them.
+     */
     public static void loadAllCards() {
         System.out.println("Loading card images...");
 
@@ -42,6 +44,9 @@ public class CardImageLoader {
         backImage = loadAndScale(BACK_DIR);
         System.out.println("Loaded " + cardImageCache.size() + " card images.");
     }
+    /**
+     * Loads and scales an image from the given path.
+     */
     private static ImageIcon loadAndScale(String path){
         try{
             BufferedImage img = ImageIO.read(new File(path));
@@ -54,7 +59,9 @@ public class CardImageLoader {
             return null;
         }
     }
-
+    /*
+    * Retrieves the image icon for the given card.
+    */
     public static ImageIcon getCardImage(Card card) {
         String code = suitToPrefix(card.getSuit()) + valueToNumber(card.getValue());
         return cardImageCache.get(code);
@@ -62,7 +69,9 @@ public class CardImageLoader {
     public static ImageIcon getBackImage(){
         return backImage;
     }
-
+    /**
+     * Helper to convert suit to prefix used in filenames.
+     */
     private static String suitToPrefix(SUIT suit) {
         switch (suit) {
             case HEARTS:   return "h";
@@ -72,6 +81,9 @@ public class CardImageLoader {
             default:       return "";
         }
     }
+    /**
+     * Helper to convert card value to two-digit number used in filenames.
+     */
     private static String valueToNumber(VALUE value){
         switch(value){
             case ACE: return "01";

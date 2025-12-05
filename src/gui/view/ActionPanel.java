@@ -7,10 +7,6 @@ import players.Player;
 
 /**
  * ActionPanel shows all action buttons for the current player.
- * FIXED VERSION:
- * - Never hides itself (visibility problems in Swing fixed)
- * - Only enables/disables buttons
- * - Fully compatible with GUIListener + GameEngine
  */
 public class ActionPanel extends JPanel {
 
@@ -23,7 +19,9 @@ public class ActionPanel extends JPanel {
 
     /** Send selected action back to GUIListener */
     private Consumer<String> actionConsumer;
-
+    /**
+     * Construct the ActionPanel with buttons and listeners
+     */
     public ActionPanel() {
         setLayout(new FlowLayout());
         setBackground(new Color(30, 30, 30));
@@ -54,7 +52,10 @@ public class ActionPanel extends JPanel {
         nextHandButton.setEnabled(false);
         nextHandButton.setVisible(false);
     }
-
+    /**
+     * Handle the Raise action by prompting for an amount
+     * and sending it back to the listener.
+     */
    private void handleRaise() {
       JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
       JDialog dialog = new JDialog(topFrame, "Enter raise amount", true);
@@ -94,6 +95,10 @@ public class ActionPanel extends JPanel {
         this.actionConsumer = consumer;
     }
 
+    /**
+     * Send action to consumer if set
+     * @param action the action string to send
+     */
     private void send(String action) {
         if (actionConsumer != null) {
             actionConsumer.accept(action);
