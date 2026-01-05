@@ -1,4 +1,0 @@
-Here, add any questions/comments/concerns about project structure, 
-implementation, etc.
-
-on the big blind's turn unable to use call must raise 20 to match big blind, i will attempt to fix this later, probably when we have a start of the GUI
