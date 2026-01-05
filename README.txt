@@ -1,9 +1,14 @@
 README.txt – Texas Hold’em Poker (Java)
 
-COP3252 – Assignment X
 Authors:
  -Tyler Drake    
  -Steven Kester
+ 
+## Status
+Feature-complete for local pass-and-play (2–8 players). Some edge-case bugs remain.
+
+## Known Issues
+See `BUGS.md`.
 
 1. Overview
 
